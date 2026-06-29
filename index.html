@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UBIT – Course Application Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f2f5;
+      color: #222;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px 64px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.10);
+      padding: 36px 40px;
+      width: 100%;
+      max-width: 680px;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #1a3a5c;
+      border-bottom: 2px solid #1a3a5c;
+      padding-bottom: 10px;
+      margin-bottom: 24px;
+    }
+    h1 span { font-weight: 400; font-size: 0.9rem; color: #555; display: block; margin-top: 4px; }
+
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: #333; }
+    .field { margin-bottom: 20px; }
+
+    input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      transition: border 0.2s;
+    }
+    input:focus { outline: none; border-color: #1a3a5c; }
+
+    /* --- Multiselect dropdown --- */
+    .dropdown-wrapper { position: relative; }
+    .dropdown-trigger {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+    .dropdown-trigger:focus { outline: none; border-color: #1a3a5c; }
+    .dropdown-trigger .placeholder { color: #888; }
+    .dropdown-trigger .arrow { font-size: 0.7rem; color: #666; }
+
+    .dropdown-panel {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      z-index: 999;
+      max-height: 320px;
+      display: flex;
+      flex-direction: column;
+    }
+    .dropdown-panel.hidden { display: none !important; }
+    .dropdown-search {
+      padding: 8px 10px;
+      border-bottom: 1px solid #eee;
+      flex-shrink: 0;
+    }
+    .dropdown-search input {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 0.88rem;
+    }
+    .dropdown-list {
+      overflow-y: auto;
+      flex: 1;
+    }
+    .dropdown-item {
+      padding: 8px 12px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .dropdown-item:hover { background: #f0f4ff; }
+    .dropdown-item input[type="checkbox"] { margin-top: 2px; flex-shrink: 0; accent-color: #1a3a5c; }
+    .dropdown-item .course-code { font-weight: 600; color: #1a3a5c; min-width: 80px; }
+    .dropdown-item .course-name { color: #333; }
+
+    .selected-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+      min-height: 0;
+    }
+    .tag {
+      background: #e8f0fe;
+      color: #1a3a5c;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tag button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #1a3a5c;
+      font-size: 0.9rem;
+      line-height: 1;
+      padding: 0;
+    }
+
+    /* --- Request type --- */
+    .request-options { display: flex; gap: 20px; margin-top: 4px; }
+    .request-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      padding: 10px 16px;
+      border: 2px solid #ddd;
+      border-radius: 7px;
+      flex: 1;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .request-option input { accent-color: #1a3a5c; }
+    .request-option:has(input:checked) {
+      border-color: #1a3a5c;
+      background: #f0f4ff;
+    }
+    .request-option strong { font-size: 0.9rem; }
+    .request-option span { font-size: 0.78rem; color: #666; display: block; }
+
+    /* --- Button --- */
+    .btn-generate {
+      width: 100%;
+      padding: 13px;
+      background: #1a3a5c;
+      color: #fff;
+      border: none;
+      border-radius: 7px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .btn-generate:hover { background: #14304f; }
+    .btn-generate:disabled { background: #7a9cbf; cursor: not-allowed; }
+
+    .error { color: #c0392b; font-size: 0.82rem; margin-top: 5px; }
+    .hint { font-size: 0.78rem; color: #777; margin-top: 4px; }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>
+    Course Application Form
+    <span>Department of Computer Science – University of Karachi (UBIT)</span>
+  </h1>
+
+  <div class="field">
+    <label for="seatNo">Seat Number <span style="color:red">*</span></label>
+    <input type="text" id="seatNo" placeholder="e.g. 12345" maxlength="20" />
+    <div class="error hidden" id="err-seat"></div>
+  </div>
+
+  <div class="field">
+    <label for="studentName">Student Name <span style="color:red">*</span></label>
+    <input type="text" id="studentName" placeholder="Full name as per university record" maxlength="100" />
+    <div class="error hidden" id="err-name"></div>
+  </div>
+
+  <div class="field">
+    <label>Course(s) <span style="color:red">*</span></label>
+    <div class="dropdown-wrapper" id="dropdownWrapper">
+      <div class="dropdown-trigger" id="dropdownTrigger" tabindex="0" role="button" aria-haspopup="listbox" aria-expanded="false">
+        <span class="placeholder" id="triggerLabel">Select course(s)…</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="dropdown-panel hidden" id="dropdownPanel">
+        <div class="dropdown-search">
+          <input type="text" id="courseSearch" placeholder="Search by code or name…" autocomplete="off" />
+        </div>
+        <div class="dropdown-list" id="courseList" role="listbox" aria-multiselectable="true"></div>
+      </div>
+    </div>
+    <div class="selected-tags" id="selectedTags"></div>
+    <div class="error hidden" id="err-courses"></div>
+  </div>
+
+  <div class="field">
+    <label>Request Type <span style="color:red">*</span></label>
+    <div class="request-options">
+      <label class="request-option">
+        <input type="radio" name="requestType" value="repeat" id="reqRepeat" />
+        <div>
+          <strong>Repeat</strong>
+          <span>Repeat the course / exam</span>
+        </div>
+      </label>
+      <label class="request-option">
+        <input type="radio" name="requestType" value="improve" id="reqImprove" />
+        <div>
+          <strong>Improve</strong>
+          <span>Improve the existing grade</span>
+        </div>
+      </label>
+    </div>
+    <div class="error hidden" id="err-request"></div>
+  </div>
+
+  <button class="btn-generate" id="btnGenerate">Generate & Download Application PDF</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
