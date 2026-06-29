@@ -230,9 +230,12 @@ async function generatePDF() {
   ln(1.2);
 
   // ── Date ──
-  doc.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "bold");
+  const dateLabelWidth = doc.getTextWidth("Date: ");
   doc.setFontSize(10);
-  doc.text("Date: " + todayFormatted(), ML, y);
+  doc.text("Date: ", ML, y);
+  doc.setFont("helvetica", "normal");
+  doc.text(todayFormatted(), ML + dateLabelWidth, y);
   ln(1.8);
 
   // ── Addressee ──
